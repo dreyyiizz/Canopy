@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#153e32">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'">
+  <title>Canopy · Plant roof</title><link rel="stylesheet" href="styles.css"><script src="app.js" defer></script>
+</head>
+<body>
+<main>
+  <header><div class="brand"><span class="brand-mark" aria-hidden="true">⌂</span><div><strong>canopy<span>.</span></strong><small>A little care, from anywhere nearby.</small></div></div><button id="setup" class="icon-button" aria-label="Connection settings">⚙</button></header>
+  <div class="eyebrow">YOUR GROWING SPACE</div>
+  <div class="heading"><h1>Plant roof</h1><span id="connectionBadge" class="badge">Demo mode</span></div>
+  <p class="intro">Let a little more outside in.</p>
+  <section class="roof-card" aria-labelledby="roofTitle">
+    <div class="card-top"><span id="roofTitle">ROOF CONTROL</span><span id="modeTag">SIMULATION</span></div>
+    <div class="roof-value"><span id="percent">50</span><span class="percent-sign">%</span><span class="position-caption">requested opening</span></div>
+    <p id="positionLabel">Partly open · demo</p>
+    <svg class="greenhouse" viewBox="0 0 340 180" role="img" aria-label="Two roof panels pivot at the outer edges and meet at the center when closed. Schematic, not measured position.">
+      <defs><linearGradient id="glass" x2="0" y2="1"><stop stop-color="#cee6bb" stop-opacity=".22"/><stop offset="1" stop-color="#cee6bb" stop-opacity=".04"/></linearGradient></defs>
+      <ellipse cx="170" cy="164" rx="134" ry="10" fill="#08291e" opacity=".6"/>
+      <path d="M65 100H275V157H65Z" fill="url(#glass)" stroke="#739b7e" stroke-width="2"/>
+      <path d="M117 100V157M223 100V157" stroke="#739b7e" stroke-width="2"/>
+      <path d="M72 157H268" stroke="#d0dfac" stroke-width="3" stroke-linecap="round"/>
+      <g stroke="#9dbb79" stroke-width="3" fill="#a9cd87"><path d="M101 151V121M101 139C82 140 82 124 82 124C100 121 101 139 101 139M101 131C117 131 119 116 119 116C103 112 101 131 101 131"/><path d="M158 151V114M158 135C139 135 138 119 138 119C155 117 158 135 158 135M158 125C174 126 178 108 178 108C160 108 158 125 158 125"/><path d="M218 151V126M218 140C198 140 200 125 200 125C216 122 218 140 218 140M218 132C237 134 236 116 236 116C219 115 218 132 218 132"/></g>
+      <path d="M170 77V107" stroke="#a9c095" stroke-width="1" stroke-dasharray="3 4"/>
+      <path id="roofLeft" d="M65 100H170" stroke="#d7efac" stroke-width="5" stroke-linecap="round"/>
+      <path id="roofRight" d="M275 100H170" stroke="#d7efac" stroke-width="5" stroke-linecap="round"/>
+      <g fill="#153e32" stroke="#d7efac" stroke-width="2"><circle cx="65" cy="100" r="6"/><circle cx="275" cy="100" r="6"/></g>
+      <g fill="#d7efac"><circle cx="65" cy="100" r="2"/><circle cx="275" cy="100" r="2"/></g>
+      <g fill="#bacbbb" font-size="9" text-anchor="middle"><text x="38" y="94">PIVOT</text><text x="302" y="94">PIVOT</text></g>
+    </svg>
+    <div class="roof-foot"><span id="controlValue">Control level 15 / 30</span><span>Two pivots · linked panels</span></div>
+  </section>
+  <section class="controls" aria-label="Roof controls">
+    <div class="primary-actions"><button id="closeRoof" class="secondary">Close roof</button><button id="openRoof" class="primary">Open roof</button></div>
+    <div class="slider-heading"><label for="level">Adjust opening</label><output id="draftValue" for="level">50%</output></div>
+    <input type="range" id="level" min="0" max="30" step="5" value="15" aria-label="Requested roof opening">
+    <div class="slider-labels"><span>Closed</span><span>Half open</span><span>Open</span></div>
+    <button id="applyLevel" class="apply">Apply position</button>
+    <p class="position-note">Shows the controller’s target, not a measured roof position.</p>
+  </section>
+  <div class="section-heading"><h2>Inside the growing space</h2><span id="sensorBadge">Sample readings</span></div>
+  <section class="sensors" aria-label="Growing conditions">
+    <article><div class="sensor-icon" aria-hidden="true">☀</div><span>Temperature</span><div><strong id="temperature">28.0</strong><small>°C</small></div></article>
+    <article><div class="sensor-icon water" aria-hidden="true">◉</div><span>Humidity</span><div><strong id="humidity">65</strong><small>%</small></div></article>
+  </section>
+  <div id="notice" class="notice" role="status">Demo mode. These controls do not move your real roof.</div>
+  <section class="connection-card"><div><span class="status-dot" id="statusDot"></span><strong id="connectionTitle">Try it out first</strong><p id="connectionDetail">Connect your laptop when you’re ready.</p></div><button id="connectLink">Connect →</button></section>
+  <footer>ARDUINO UNO <span>·</span> USB TO LAPTOP <span>·</span> YOUR WI-FI</footer>
+</main>
+<dialog id="settings">
+  <form id="connectionForm">
+    <div class="dialog-heading"><h2>Connect your roof</h2><button id="dismissSettings" type="button" class="icon-button" aria-label="Close settings">×</button></div>
+    <p>Your laptop stays plugged into the Arduino. Keep both your phone and laptop on the same Wi-Fi.</p>
+    <label for="serverAddress">Laptop address</label><input id="serverAddress" type="url" placeholder="http://192.168.1.20:8765" autocomplete="off" spellcheck="false">
+    <label for="accessKey">Connection key</label><input id="accessKey" type="password" placeholder="From the laptop’s Canopy window" autocomplete="off">
+    <small id="addressHint">Start the laptop bridge to find its address and key.</small>
+    <div id="settingsError" role="alert"></div>
+    <button id="connectButton" class="primary" type="submit">Connect to laptop</button>
+    <button id="demoButton" class="secondary" type="button">Use demo mode</button>
+    <p class="privacy-note">The key is kept for this app session. This version uses your local network; it does not provide access from outside your Wi-Fi.</p>
+  </form>
+</dialog>
+</body></html>
