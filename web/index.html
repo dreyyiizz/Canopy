@@ -4,11 +4,11 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#153e32">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'">
-  <title>Canopy · Plant roof</title><link rel="stylesheet" href="styles.css"><script src="app.js" defer></script>
+  <title>Canopy · Plant Roof Control</title><link rel="stylesheet" href="styles.css"><script src="app.js" defer></script>
 </head>
 <body>
 <main>
-  <header><div class="brand"><span class="brand-mark" aria-hidden="true">⌂</span><div><strong>canopy<span>.</span></strong><small>A little care, from anywhere nearby.</small></div></div><button id="setup" class="icon-button" aria-label="Connection settings">⚙</button></header>
+  <header><div class="brand"><span class="brand-mark" aria-hidden="true">⌂</span><div><strong>canopy<span>.</span></strong><small>Direct laptop control for your plant roof.</small></div></div><button id="setup" class="icon-button" aria-label="Connection settings">⚙</button></header>
   <div class="eyebrow">YOUR GROWING SPACE</div>
   <div class="heading"><h1>Plant roof</h1><span id="connectionBadge" class="badge">Demo mode</span></div>
   <p class="intro">Let a little more outside in.</p>
@@ -34,11 +34,34 @@
   </section>
   <section class="controls" aria-label="Roof controls">
     <div class="primary-actions"><button id="closeRoof" class="secondary">Close roof</button><button id="openRoof" class="primary">Open roof</button></div>
-    <div class="slider-heading"><label for="level">Adjust opening</label><output id="draftValue" for="level">50%</output></div>
-    <input type="range" id="level" min="0" max="30" step="5" value="15" aria-label="Requested roof opening">
-    <div class="slider-labels"><span>Closed</span><span>Half open</span><span>Open</span></div>
-    <button id="applyLevel" class="apply">Apply position</button>
-    <p class="position-note">Shows the controller’s target, not a measured roof position.</p>
+    
+    <div class="control-mode-tabs">
+      <button id="parallelModeBtn" class="mode-tab active">Parallel Control</button>
+      <button id="independentModeBtn" class="mode-tab">Independent Control</button>
+    </div>
+    
+    <div id="parallelControls" class="control-panel active">
+      <div class="slider-heading"><label for="level">Adjust opening</label><output id="draftValue" for="level">50%</output></div>
+      <input type="range" id="level" min="0" max="30" step="5" value="15" aria-label="Requested roof opening">
+      <div class="slider-labels"><span>Closed</span><span>Half open</span><span>Open</span></div>
+      <button id="applyLevel" class="apply">Apply position</button>
+    </div>
+    
+    <div id="independentControls" class="control-panel">
+      <div class="independent-slider-group">
+        <div class="slider-heading"><label for="leftLevel">Left servo</label><output id="draftLeftValue" for="leftLevel">50%</output></div>
+        <input type="range" id="leftLevel" min="0" max="30" step="5" value="15" aria-label="Left servo position">
+        <div class="slider-labels"><span>Closed</span><span>Half open</span><span>Open</span></div>
+      </div>
+      <div class="independent-slider-group">
+        <div class="slider-heading"><label for="rightLevel">Right servo</label><output id="draftRightValue" for="rightLevel">50%</output></div>
+        <input type="range" id="rightLevel" min="0" max="30" step="5" value="15" aria-label="Right servo position">
+        <div class="slider-labels"><span>Closed</span><span>Half open</span><span>Open</span></div>
+      </div>
+      <button id="applyIndependent" class="apply">Apply position</button>
+    </div>
+    
+    <p class="position-note">Shows the controller's target, not a measured roof position.</p>
   </section>
   <div class="section-heading"><h2>Inside the growing space</h2><span id="sensorBadge">Sample readings</span></div>
   <section class="sensors" aria-label="Growing conditions">
@@ -46,20 +69,19 @@
     <article><div class="sensor-icon water" aria-hidden="true">◉</div><span>Humidity</span><div><strong id="humidity">65</strong><small>%</small></div></article>
   </section>
   <div id="notice" class="notice" role="status">Demo mode. These controls do not move your real roof.</div>
-  <section class="connection-card"><div><span class="status-dot" id="statusDot"></span><strong id="connectionTitle">Try it out first</strong><p id="connectionDetail">Connect your laptop when you’re ready.</p></div><button id="connectLink">Connect →</button></section>
-  <footer>ARDUINO UNO <span>·</span> USB TO LAPTOP <span>·</span> YOUR WI-FI</footer>
+  <section class="connection-card"><div><span class="status-dot" id="statusDot"></span><strong id="connectionTitle">Try it out first</strong><p id="connectionDetail">Connect your Arduino when you're ready.</p></div><button id="connectLink">Connect →</button></section>
+  <footer>ARDUINO UNO <span>·</span> USB TO LAPTOP <span>·</span> WEB CONTROL</footer>
 </main>
 <dialog id="settings">
   <form id="connectionForm">
-    <div class="dialog-heading"><h2>Connect your roof</h2><button id="dismissSettings" type="button" class="icon-button" aria-label="Close settings">×</button></div>
-    <p>Your laptop stays plugged into the Arduino. Keep both your phone and laptop on the same Wi-Fi.</p>
-    <label for="serverAddress">Laptop address</label><input id="serverAddress" type="url" placeholder="http://192.168.1.20:8765" autocomplete="off" spellcheck="false">
-    <label for="accessKey">Connection key</label><input id="accessKey" type="password" placeholder="From the laptop’s Canopy window" autocomplete="off">
-    <small id="addressHint">Start the laptop bridge to find its address and key.</small>
+    <div class="dialog-heading"><h2>Connect your Arduino</h2><button id="dismissSettings" type="button" class="icon-button" aria-label="Close settings">×</button></div>
+    <p>Connect your Arduino Uno to this laptop via USB and enter the connection key shown in the terminal.</p>
+    <label for="accessKey">Connection key</label><input id="accessKey" type="password" placeholder="From the terminal where you started Canopy" autocomplete="off">
+    <small id="addressHint">The connection key is displayed when you run Start-Canopy.cmd</small>
     <div id="settingsError" role="alert"></div>
-    <button id="connectButton" class="primary" type="submit">Connect to laptop</button>
+    <button id="connectButton" class="primary" type="submit">Connect to Arduino</button>
     <button id="demoButton" class="secondary" type="button">Use demo mode</button>
-    <p class="privacy-note">The key is kept for this app session. This version uses your local network; it does not provide access from outside your Wi-Fi.</p>
+    <p class="privacy-note">The key is kept for this browser session. All communication stays on your local laptop.</p>
   </form>
 </dialog>
 </body></html>

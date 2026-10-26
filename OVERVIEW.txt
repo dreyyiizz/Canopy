@@ -1,0 +1,201 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                    CANOPY - PLANT ROOF WEB CONTROL                           ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+  A localhost web application for controlling your Arduino-powered plant roof
+  directly from your laptop browser. No mobile app, no network configuration!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 QUICK START
+
+  ┌─ 30-SECOND DEMO (No Hardware) ───────────────────────────────────────────┐
+  │                                                                           │
+  │  1. Double-click Start-Canopy.cmd                                        │
+  │  2. Type DEMO when asked for COM port                                    │
+  │  3. Browser opens automatically                                          │
+  │  4. Enter the connection key from terminal                               │
+  │  5. Try the controls!                                                    │
+  │                                                                           │
+  └───────────────────────────────────────────────────────────────────────────┘
+
+  ┌─ REAL HARDWARE SETUP (5 Minutes) ────────────────────────────────────────┐
+  │                                                                           │
+  │  FIRST TIME:                                                             │
+  │   1. Install Arduino IDE                                                 │
+  │   2. Install libraries: Servo, DHT sensor, Adafruit Unified Sensor       │
+  │   3. Upload firmware/CanopyUno/CanopyUno.ino to your Arduino            │
+  │                                                                           │
+  │  EVERY TIME:                                                             │
+  │   1. Connect Arduino via USB                                             │
+  │   2. Run Start-Canopy.cmd                                                │
+  │   3. Enter your COM port (e.g., COM3)                                    │
+  │   4. Browser opens with control interface                                │
+  │   5. Enter connection key                                                │
+  │   6. Control your roof!                                                  │
+  │                                                                           │
+  └───────────────────────────────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🏗️  ARCHITECTURE
+
+     ┌──────────────────────────────────────────────┐
+     │             YOUR LAPTOP                      │
+     │                                              │
+     │   ┌──────────┐           ┌──────────┐       │
+     │   │ Browser  │ ◄───────► │  Python  │       │
+     │   │  (UI)    │   HTTP    │  Server  │       │
+     │   └──────────┘  :8765    └──────────┘       │
+     │                               │              │
+     └───────────────────────────────┼──────────────┘
+                                     │ USB Serial
+                                     ▼
+                            ┌──────────────┐
+                            │  Arduino Uno │
+                            │              │
+                            │ • 2 Servos   │
+                            │ • DHT11      │
+                            │ • Buttons    │
+                            └──────────────┘
+                                     │
+                                     ▼
+                              ┌────────────┐
+                              │ Plant Roof │
+                              └────────────┘
+
+  Everything runs on localhost — no network, no mobile app!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📦 WHAT'S INCLUDED
+
+  Start-Canopy.cmd          → Windows launcher (auto-setup)
+  README.md                 → Full documentation
+  QUICKSTART.md             → Getting started in 5 minutes
+  ARCHITECTURE.md           → Technical deep dive
+  TECHNICAL-NOTES.md        → Implementation details
+  CHANGELOG.md              → Version history
+
+  web/                      → Web interface (HTML/CSS/JS)
+    ├── index.html          → Control UI
+    ├── app.js              → JavaScript logic
+    └── styles.css          → Styling
+
+  bridge/                   → Python server
+    ├── server.py           → HTTP API + USB bridge
+    ├── requirements.txt    → Dependencies (pySerial)
+    └── vendor/             → Bundled packages
+
+  firmware/                 → Arduino code
+    └── CanopyUno/
+        └── CanopyUno.ino   → Servo + sensor control
+
+  tests/                    → Unit tests
+    └── test_bridge.py      → Server tests
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎮 CONTROLS
+
+  Open Roof      → Fully open (level 30)
+  Close Roof     → Fully closed (level 0)
+  Slider         → Fine adjustment (0, 5, 10, 15, 20, 25, 30)
+  Apply Position → Send slider value to Arduino
+
+  Live Readings:
+  • Temperature (°C) — Updated every 2 seconds
+  • Humidity (%)     — Updated every 2 seconds
+
+  Physical buttons on Arduino work independently!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔧 REQUIREMENTS
+
+  ✓ Windows laptop (adaptable to Mac/Linux)
+  ✓ Python 3.10+ with pip
+  ✓ Modern web browser (Chrome, Firefox, Edge)
+  ✓ Arduino Uno with USB cable
+  ✓ Arduino IDE (for firmware upload)
+
+  Hardware:
+  ✓ 2× Servo motors
+  ✓ 1× DHT11 temperature/humidity sensor
+  ✓ 4× Push buttons (optional)
+  ✓ Power supply for servos (don't use USB power!)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❓ TROUBLESHOOTING
+
+  No ports found         → Plug in Arduino (data cable, not charge-only)
+  Port is busy           → Close Arduino Serial Monitor
+  Arduino offline        → Check COM port, wait 3-5 seconds after connecting
+  Server offline         → Make sure Start-Canopy.cmd is running
+  Temperature shows —    → Check DHT11 wiring, wait 2 seconds
+  Roof wrong direction   → Edit servo constants in Arduino code
+  Browser doesn't open   → Manually open http://127.0.0.1:8765
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎓 FOR PRESENTATIONS
+
+  ✓ Start with demo mode (type DEMO when prompted)
+  ✓ Show the interface and explain controls
+  ✓ Connect real Arduino and show live readings
+  ✓ Demonstrate open/close and slider control
+  ✓ Press physical buttons to show they still work
+  ✓ Explain the architecture (browser → Python → USB → Arduino)
+
+  Everything runs on localhost — reliable for classroom demos!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔒 SECURITY
+
+  • Localhost only (127.0.0.1) — not exposed to network
+  • Connection key prevents unauthorized access
+  • Key stored in bridge/.canopy-key
+  • No cloud services, no external accounts
+  • All communication stays on your laptop
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📚 DOCUMENTATION
+
+  README.md          → Complete user guide
+  QUICKSTART.md      → Fast setup guide
+  ARCHITECTURE.md    → System design and data flow
+  TECHNICAL-NOTES.md → Protocol and implementation
+  CHANGELOG.md       → Version history and changes
+  OVERVIEW.txt       → This file
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✨ KEY FEATURES
+
+  ✅ No network configuration needed
+  ✅ Automatic browser launch
+  ✅ Live temperature & humidity readings
+  ✅ Animated roof visualization
+  ✅ Demo mode for safe testing
+  ✅ Physical buttons still work
+  ✅ Simple one-file launcher
+  ✅ No build process or compilation
+  ✅ Runs entirely on localhost
+  ✅ Connection key security
+  ✅ Real-time status updates
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 GET STARTED NOW
+
+  Just double-click Start-Canopy.cmd and follow the prompts!
+
+  For detailed instructions, see README.md
+  For quick setup, see QUICKSTART.md
+
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                         Happy roof controlling! 🌱                           ║
+╚══════════════════════════════════════════════════════════════════════════════╝

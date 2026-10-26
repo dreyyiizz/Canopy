@@ -1,4 +1,4 @@
-"""Canopy: local Wi-Fi to USB bridge. No cloud account or database required."""
+"""Canopy: localhost web control for Arduino plant roof. No mobile app or network required."""
 import argparse
 import hmac
 import json
@@ -7,6 +7,7 @@ import secrets
 import socket
 import threading
 import time
+import webbrowser
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import urlsplit
@@ -34,9 +35,9 @@ class RoofBridge:
         self.counter = 0
         self.last_received = 0
         self.error = "Waiting for Arduino. Check the COM port and USB cable."
-        self.values = dict(level=None, temperature_c=None, humidity_pct=None)
+        self.values = dict(level=None, leftLevel=None, rightLevel=None, temperature_c=None, humidity_pct=None)
         if demo:
-            self.values.update(level=15, temperature_c=28.0, humidity_pct=65.0)
+            self.values.update(level=15, leftLevel=15, rightLevel=15, temperature_c=28.0, humidity_pct=65.0)
         self.thread = None
 
     def start(self):
@@ -50,12 +51,21 @@ class RoofBridge:
             connected = self.demo or (self.serial is not None and age < STALE_SECONDS)
             return {**self.values, "connected": connected, "demo": self.demo,
                     "updated_seconds_ago": round(age, 1) if self.last_received else None,
-                    "error": None if connected else self.error}
+                    "error": None if connected else self.error,
+                    "leftLevel": self.values.get("leftLevel", self.values.get("level")),
+                    "rightLevel": self.values.get("rightLevel", self.values.get("level"))}
 
     def _accept(self, message):
         if not isinstance(message, dict) or message.get("type") not in ("state", "ack"):
             return
         if not valid_level(message.get("level")):
+            return
+        # Also check independent levels if present
+        leftLevel = message.get("leftLevel", message.get("level"))
+        rightLevel = message.get("rightLevel", message.get("level"))
+        if leftLevel is not None and (type(leftLevel) not in (float, int) or not (0 <= leftLevel <= 30)):
+            return
+        if rightLevel is not None and (type(rightLevel) not in (float, int) or not (0 <= rightLevel <= 30)):
             return
         temperature = message.get("temperature_c")
         humidity = message.get("humidity_pct")
@@ -64,11 +74,17 @@ class RoofBridge:
         if humidity is not None and (type(humidity) not in (float, int) or not 0 <= humidity <= 100):
             return
         with self.lock:
-            self.values = dict(level=message["level"], temperature_c=temperature, humidity_pct=humidity)
+            self.values = dict(level=message["level"], leftLevel=leftLevel, rightLevel=rightLevel,
+                             temperature_c=temperature, humidity_pct=humidity)
             self.last_received = time.monotonic()
             self.error = "Arduino stopped replying. Check the USB connection."
             if message.get("type") == "ack" and self.pending and message.get("id") == self.pending["id"]:
-                if message["level"] == self.pending["level"]:
+                # Check if it's an independent control ack or parallel ack
+                if "leftLevel" in self.pending and "rightLevel" in self.pending:
+                    if leftLevel == self.pending["leftLevel"] and rightLevel == self.pending["rightLevel"]:
+                        self.pending["result"] = self.snapshot()
+                        self.pending["event"].set()
+                elif message["level"] == self.pending["level"]:
                     self.pending["result"] = self.snapshot()
                     self.pending["event"].set()
 
@@ -133,6 +149,8 @@ class RoofBridge:
             with self.lock:
                 if self.demo:
                     self.values["level"] = level
+                    self.values["leftLevel"] = level
+                    self.values["rightLevel"] = level
                     return self.snapshot()
                 if not self.snapshot()["connected"]:
                     raise BridgeError("Arduino offline. Reconnect USB before moving the roof.")
@@ -141,6 +159,38 @@ class RoofBridge:
                 self.pending = item
                 try:
                     self.serial.write(f"SET {self.counter} {level}\n".encode("ascii"))
+                except Exception as exc:
+                    raise BridgeError(f"USB write failed: {exc}") from exc
+            if not item["event"].wait(3):
+                raise BridgeError("Arduino did not acknowledge. The command may have arrived; check the roof before retrying.")
+            if "error" in item:
+                raise BridgeError(item["error"])
+            return item["result"]
+        finally:
+            with self.lock:
+                self.pending = None
+            self.command_lock.release()
+
+    def set_independent_levels(self, leftLevel, rightLevel):
+        if not valid_level(leftLevel) or not valid_level(rightLevel):
+            raise ValueError("Levels must be one of 0, 5, 10, 15, 20, 25, or 30.")
+        if not self.command_lock.acquire(blocking=False):
+            raise BridgeError("Another command is waiting for the Arduino. Try again shortly.")
+        try:
+            with self.lock:
+                if self.demo:
+                    self.values["leftLevel"] = leftLevel
+                    self.values["rightLevel"] = rightLevel
+                    if leftLevel == rightLevel:
+                        self.values["level"] = leftLevel
+                    return self.snapshot()
+                if not self.snapshot()["connected"]:
+                    raise BridgeError("Arduino offline. Reconnect USB before moving the roof.")
+                self.counter += 1
+                item = dict(id=self.counter, leftLevel=leftLevel, rightLevel=rightLevel, event=threading.Event())
+                self.pending = item
+                try:
+                    self.serial.write(f"SETLR {self.counter} {leftLevel} {rightLevel}\n".encode("ascii"))
                 except Exception as exc:
                     raise BridgeError(f"USB write failed: {exc}") from exc
             if not item["event"].wait(3):
@@ -217,7 +267,8 @@ def make_handler(bridge, key):
             self.wfile.write(content)
 
         def do_POST(self):
-            if urlsplit(self.path).path != "/api/roof":
+            path = urlsplit(self.path).path
+            if path not in ("/api/roof", "/api/roof-independent"):
                 self.send_json(404, {"error": "Not found"})
                 return
             if not self.authorized():
@@ -229,9 +280,17 @@ def make_handler(bridge, key):
                 if self.headers.get("Content-Type", "").split(";")[0] != "application/json":
                     raise ValueError("Expected JSON")
                 data = json.loads(self.rfile.read(length))
-                if not isinstance(data, dict) or set(data) != {"level"}:
-                    raise ValueError("Expected one roof level")
-                self.send_json(200, bridge.set_level(data["level"]))
+                
+                if path == "/api/roof-independent":
+                    # Independent servo control
+                    if not isinstance(data, dict) or set(data) != {"leftLevel", "rightLevel"}:
+                        raise ValueError("Expected leftLevel and rightLevel")
+                    self.send_json(200, bridge.set_independent_levels(data["leftLevel"], data["rightLevel"]))
+                else:
+                    # Parallel control
+                    if not isinstance(data, dict) or set(data) != {"level"}:
+                        raise ValueError("Expected one roof level")
+                    self.send_json(200, bridge.set_level(data["level"]))
             except (ValueError, UnicodeError) as exc:
                 self.send_json(400, {"error": str(exc)})
             except BridgeError as exc:
@@ -267,19 +326,39 @@ def main():
     bridge = RoofBridge(args.port, args.demo)
     server = ThreadingHTTPServer((args.bind, args.http_port), make_handler(bridge, key))
     bridge.start()
-    print("\nCANOPY - PLANT ROOF", flush=True)
-    print("Mode:", "DEMO - no hardware moves" if args.demo else f"USB Arduino on {args.port}")
-    print(f"Laptop browser: http://127.0.0.1:{args.http_port}")
-    addresses = sorted({info[4][0] for info in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET)})
-    for address in addresses:
-        if not address.startswith("127."):
-            print(f"Possible phone address: http://{address}:{args.http_port}")
-    print("Connection key:", key)
-    print("Use the laptop's Wi-Fi IPv4 address. Keep this window open. Ctrl+C stops it.\n", flush=True)
+    
+    # Determine the local URL
+    local_url = f"http://127.0.0.1:{args.http_port}"
+    
+    print("\n" + "="*60, flush=True)
+    print("CANOPY - PLANT ROOF WEB CONTROL", flush=True)
+    print("="*60, flush=True)
+    print(f"Mode: {'DEMO - no hardware moves' if args.demo else f'USB Arduino on {args.port}'}")
+    print(f"\nWeb Interface: {local_url}")
+    print(f"Connection key: {key}")
+    print("\nInstructions:")
+    print("1. Your browser will open automatically")
+    print("2. Enter the connection key shown above")
+    print("3. Control your plant roof from this laptop")
+    print("\nKeep this window open. Press Ctrl+C to stop.\n", flush=True)
+    print("="*60 + "\n", flush=True)
+    
+    # Open browser automatically after a short delay
+    def open_browser():
+        time.sleep(1.5)
+        try:
+            webbrowser.open(local_url)
+        except Exception as e:
+            print(f"Could not open browser automatically: {e}")
+            print(f"Please open {local_url} manually.\n", flush=True)
+    
+    browser_thread = threading.Thread(target=open_browser, daemon=True)
+    browser_thread.start()
+    
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        pass
+        print("\nShutting down...", flush=True)
     finally:
         server.server_close()
         bridge.close()

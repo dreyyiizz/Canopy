@@ -1,110 +1,214 @@
-# Canopy — plant roof group project
+# Canopy — Plant Roof Web Control
 
-An Android app that opens/closes a plant roof and shows temperature and humidity. Your **Arduino Uno stays connected to a Windows laptop by USB**. The phone and laptop use the **same Wi-Fi**. The Uno does not need a wireless module.
+A localhost web application for controlling your Arduino-powered plant roof directly from your laptop. No mobile app, no network setup needed — just plug in your Arduino via USB and control it through your browser.
 
 ```text
-Android phone  <-- same Wi-Fi -->  Laptop running Canopy  <-- USB -->  Arduino Uno
-                                                                        |
-                                                             2 servos + DHT11
+Laptop Browser  <-- localhost -->  Python Server  <-- USB -->  Arduino Uno
+                                                                 |
+                                                      2 servos + DHT11
 ```
 
-**This is a class-project prototype.** The Android installer and Arduino program compile, and the laptop connection has been tested with simulated hardware. The real roof, phone, and circuit still need to be tested together. No Arduino serial port was detected on this laptop during preparation.
+**This is a class-project prototype.** The Arduino program compiles, and the web interface has been tested with simulated hardware. The real roof, browser, and circuit still need to be tested together.
 
 ## What is included
 
-- `Canopy-Android.apk` — installable Android test app (Android 8.0 or later).
-- `Start-Canopy.cmd` — double-click to start the Windows laptop bridge.
-- `firmware/CanopyUno/CanopyUno.ino` — replacement Arduino program with USB communication.
-- `reference/ombedfin.xodball` — unchanged copy of your original XOD project.
-- `android/`, `web/`, `bridge/` — all source code for your group.
-- `TECHNICAL-NOTES.md` — protocol, design explanation, and verification details.
+- `Start-Canopy.cmd` — double-click to start the server and open the web interface
+- `firmware/CanopyUno/CanopyUno.ino` — Arduino program with USB communication
+- `web/` — Web interface (HTML, CSS, JavaScript)
+- `bridge/` — Python server that connects the web interface to Arduino
+- `TECHNICAL-NOTES.md` — protocol, design explanation, and verification details
 
-## 1. Try the app without hardware
+## Quick Start
 
-Copy `Canopy-Android.apk` to your Android phone and open it to install. Android may ask you to allow installation from the file source you used. This is a debug-signed classroom test build, not a Play Store release. An up-to-date Android System WebView is recommended.
+### 1. Try the demo (no hardware needed)
 
-The app opens in **Demo mode**. Try **Open roof**, **Close roof**, and the slider followed by **Apply position**. The sample readings are 28 °C and 65% humidity. Demo mode never sends commands to your roof.
+1. Double-click **`Start-Canopy.cmd`**
+2. When prompted for the Arduino COM port, type **`DEMO`** and press Enter
+3. Your browser will automatically open to `http://127.0.0.1:8765`
+4. Enter the **connection key** shown in the terminal window
+5. Try the controls — they won't move any real hardware in demo mode
 
-To rehearse the laptop connection too, double-click `Start-Canopy.cmd` and enter `DEMO` at the port prompt. Follow step 4 below. The app will continue to label the laptop's simulated readings as a demo.
+### 2. Set up the Arduino (one-time setup)
 
-## 2. Prepare the Arduino once
+1. Install [Arduino IDE](https://www.arduino.cc/en/software/)
+2. Use the Library Manager to install:
+   - **Servo**
+   - **DHT sensor library by Adafruit**
+   - **Adafruit Unified Sensor**
+3. Open `firmware/CanopyUno/CanopyUno.ino`
+4. Select **Arduino Uno** and your USB port (e.g., **COM3**)
+5. Review the wiring table below, then click Upload
+6. **Close Serial Monitor** before starting the web control
 
-1. Install/open [Arduino IDE](https://www.arduino.cc/en/software/).
-2. Use its Library Manager to install **Servo**, **DHT sensor library by Adafruit**, and **Adafruit Unified Sensor**.
-3. Open `firmware/CanopyUno/CanopyUno.ino`.
-4. Select **Arduino Uno** and the correct USB port, such as **COM3**.
-5. Review the pin table and servo calibration below, then upload using the IDE's arrow button. Uploading replaces the program currently running on the Uno; the original XOD file is included as a backup.
-6. **Close Serial Monitor and XOD's connection** before starting the laptop bridge. Only one program can own the USB serial port at a time.
+### Wiring
 
-### Wiring and calibration
+These pins were taken from your original XOD file. Verify them against your actual circuit.
 
-These pins were taken from your XOD file. Verify them against your actual circuit.
-
-Your roof has **two pivoting panels, each hinged at its outer edge, that close inward to meet at the center**. The app's Close command moves both toward their closed targets; Open moves both toward their open targets. The two servo directions and endpoints depend on how the pivots and linkages are mounted. The opposite servo maps in the supplied XOD project are retained until those physical endpoints are checked.
-
-| Component | Uno pin | Behavior in this program |
+| Component | Arduino Pin | Notes |
 | --- | --- | --- |
-| DHT11 data | D2 | Temperature and humidity every 2 seconds |
-| Servo 1 signal | D9 | Linked to the roof control value |
-| Servo 2 signal | D10 | Linked in the opposite servo direction |
-| Open button | D8 | Target 30 |
-| Increase button | D12 | Add 5, up to 30 |
-| Decrease button | D13 | Subtract 5, down to 0 |
-| Close button | A0 / D14 | Target 0 |
-| Existing digital outputs | D4–D7 | Held LOW; their purpose was not identified in the file |
+| DHT11 data | D2 | Temperature and humidity sensor |
+| Servo 1 signal | D9 | First roof panel |
+| Servo 2 signal | D10 | Second roof panel (opposite direction) |
+| Open button | D8 | Physical button to open |
+| Increase button | D12 | Physical button to adjust (+5) |
+| Decrease button | D13 | Physical button to adjust (-5) |
+| Close button | A0 / D14 | Physical button to close |
 
-Buttons use `INPUT_PULLUP`: connect each button between its pin and GND. Use the servos' rated supply and a common ground with the Uno; two loaded servos should not rely on the Uno's USB power. Follow the DHT11 module's supply and pull-up requirements.
+**Buttons:** Connect each button between its pin and GND (using INPUT_PULLUP).
 
-**Check the servo endpoints before attaching the roof linkage.** The XOD maps correspond approximately to **0–48° on D9** and **180–150° on D10**. This app assumes **control value 0 = closed** and **30 = open**. Those numbers are control values, not measured roof angles. If the physical motion is reversed, swap the closed/open constants for both servos near the top of the Arduino program and upload again. Adjust endpoints if your linkage requires different travel.
+**Servos:** Use proper power supply (not USB power for two loaded servos), common ground with Arduino.
 
-On first use the firmware starts at target 0. After a command, it remembers the last target across USB resets. This remembers a command, not the measured roof position.
+**DHT11:** Follow your module's power and pull-up requirements.
 
-## 3. Start the laptop bridge
+**Calibration:** The code assumes control value 0 = closed, 30 = open. Approximate servo angles are 0–48° on D9 and 180–150° on D10. If your roof moves in the wrong direction, swap the closed/open constants in the Arduino code and re-upload.
 
-1. Install **Python 3.10 or later** if needed, enabling **Add Python to PATH**. Python is already installed on the laptop used to prepare this project.
-2. Keep the whole extracted `PlantRoof` folder together. Double-click **`Start-Canopy.cmd`**.
-3. It lists available serial ports. Enter the Uno's port, for example `COM3`.
-4. Leave the window open. It shows possible phone addresses and a **connection key**. Use the address for your laptop's Wi-Fi adapter.
-5. If Windows Firewall prompts, allow this Python app on your trusted **Private** network. Do not turn the firewall off. If necessary, allow the project Python executable through Windows Firewall for Private networks.
+### 3. Control your plant roof
 
-The launcher makes an isolated Python environment and installs its bundled USB library. Once Python and the Arduino libraries are installed, the demo needs no internet connection; the Wi-Fi network only carries local messages.
+1. Connect your Arduino Uno to your laptop via USB
+2. Double-click **`Start-Canopy.cmd`**
+3. Enter your Arduino's COM port (e.g., **COM3**)
+4. The web interface will open automatically in your browser
+5. Enter the **connection key** displayed in the terminal
+6. Click **Connect to Arduino**
+7. Wait for "Arduino online" status
+8. Use the web controls to open, close, or adjust your roof
+9. Monitor temperature and humidity readings in real-time
 
-## 4. Connect the phone
+## Requirements
 
-1. Join the phone and laptop to the **same Wi-Fi**.
-2. In Canopy, tap the gear or **Connect**.
-3. Enter the laptop address shown in its window, for example `http://192.168.1.20:8765`.
-4. Enter the connection key from that same window.
-5. Tap **Connect to laptop**. Wait for **Arduino online**.
-6. Try one small slider step with **Apply position**, then check the physical roof. Test the full open/close endpoints after confirming the direction and travel.
+- **Python 3.10 or later** (enable "Add Python to PATH" during installation)
+- **Arduino Uno** with USB cable
+- **Modern web browser** (Chrome, Firefox, Edge)
+- **Windows** (tested on Windows, adaptable to macOS/Linux)
 
-The phone must use the laptop's Wi-Fi address, **not** `localhost` or `127.0.0.1`. To find the correct address when several are listed, run `ipconfig` on the laptop and look for **Wireless LAN adapter Wi-Fi → IPv4 Address**.
+The launcher (`Start-Canopy.cmd`) automatically:
+- Creates an isolated Python environment
+- Installs required USB library (pySerial)
+- Lists available COM ports
+- Starts the web server
+- Opens your browser
 
-**Browser fallback:** the same interface also works at the laptop address in the phone's browser. Enter the connection key to leave demo mode. This is useful if APK installation is restricted on a school phone.
+## Features
 
-## During your presentation
+### Web Control
+- **Open/Close buttons** — Quick full open or full close
+- **Slider control** — Fine adjustment in 5-unit steps (0–30)
+- **Live readings** — Temperature (°C) and humidity (%) every 2 seconds
+- **Visual feedback** — Animated roof diagram shows target position
+- **Demo mode** — Try the interface without hardware
 
-- Keep the laptop awake, the bridge window open, and the USB cable connected.
-- Show open, close, a partial opening, temperature, humidity, and the physical buttons.
-- The app displays the Arduino's **requested target**, not proof that the roof moved. The supplied project has no position-feedback sensor.
-- If USB or Wi-Fi is lost, remote controls become unavailable. The firmware keeps the last target and physical buttons still work while the Uno has power. This app has no hardware emergency-stop function.
-- Use demo mode if you want to explain the interface before moving the model.
+### Physical Controls
+Your physical buttons still work independently:
+- Open, Close, Increase, Decrease buttons function even when laptop is disconnected
+- Last target position is saved to Arduino EEPROM
+
+### Safety Features
+- Connection key prevents unauthorized access
+- Commands require acknowledgment from Arduino
+- Shows controller target (not guaranteed physical position)
+- Physical buttons override web commands
+- USB disconnect detection with error reporting
 
 ## Troubleshooting
 
-| Problem | What to check |
+| Problem | Solution |
 | --- | --- |
-| No ports listed | Plug in the Uno using a data-capable USB cable; check Device Manager and the board's USB driver. |
-| Port is busy | Close Arduino Serial Monitor, Serial Plotter, and XOD. |
-| Laptop connected, Arduino offline | Correct COM port, Canopy firmware uploaded, USB connected, and a few seconds allowed for the Uno to reset. |
-| Phone cannot reach laptop | Same Wi-Fi, current laptop IPv4 address, bridge window open, and Windows Firewall Private-network access. Guest/school Wi-Fi may block communication between devices. |
-| Connection key incorrect | Copy the key from the currently running bridge window. |
-| Temperature/humidity show dashes | Check the DHT11 wiring and power, then wait for its next reading. |
-| Roof moves in the wrong direction | Recheck the four closed/open servo constants and calibrate the mechanism. |
-| Address already in use | Close another running Canopy bridge window before starting a second copy. |
+| **No COM ports listed** | Plug in Arduino with data-capable USB cable; check Device Manager |
+| **Port is busy** | Close Arduino Serial Monitor, Serial Plotter, or XOD |
+| **Arduino offline** | Verify correct COM port, firmware uploaded, USB connected, allow a few seconds for reset |
+| **Browser doesn't open** | Manually open `http://127.0.0.1:8765` in your browser |
+| **Connection key incorrect** | Copy the key from the terminal window where Start-Canopy.cmd is running |
+| **Temperature shows dashes** | Check DHT11 wiring and power, wait for next reading (every 2 seconds) |
+| **Roof moves wrong direction** | Edit the closed/open servo constants in the Arduino code and re-upload |
+| **Address already in use** | Close any other Canopy server window before starting a new one |
 
-The bridge is for your trusted local Wi-Fi. Its HTTP connection is not encrypted; do not expose port 8765 to the internet or set up router port forwarding. There are no cloud accounts or paid services.
+## Project Architecture
 
-## Explain the project in class
+**Frontend:** HTML5, CSS3, vanilla JavaScript — no framework dependencies
 
-The Android app sends a desired roof opening to the laptop over Wi-Fi. The laptop converts it to a USB serial command. The Arduino adjusts both servos and acknowledges the new target. It also sends DHT11 readings back through the laptop to the phone. The original physical buttons continue to work without the phone.
+**Backend:** Python standard library HTTP server + pySerial for USB communication
+
+**Arduino:** C++ sketch using Servo, DHT, and EEPROM libraries
+
+**Communication:**
+- Browser ↔ Server: HTTP REST API with bearer token authentication
+- Server ↔ Arduino: 9600 baud serial, JSON messages
+
+**Security:**
+- Localhost only (127.0.0.1) — not exposed to network
+- Connection key stored in `bridge/.canopy-key`
+- Key regenerates if file is deleted
+- No cloud services, no external accounts
+
+## Commands and API
+
+The web interface uses these endpoints:
+
+```http
+GET /api/status
+Authorization: Bearer <key>
+```
+
+Returns current state: level, temperature, humidity, connection status.
+
+```http
+POST /api/roof
+Authorization: Bearer <key>
+Content-Type: application/json
+
+{"level": 15}
+```
+
+Valid levels: 0, 5, 10, 15, 20, 25, 30 (closed to open in steps of 5).
+
+## Advanced Usage
+
+### Command Line Options
+
+```bash
+python bridge/server.py --port COM3        # Real Arduino
+python bridge/server.py --demo             # Simulated hardware
+python bridge/server.py --list-ports       # Show available COM ports
+python bridge/server.py --http-port 9000   # Use different port
+```
+
+### Running Tests
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+## Class Presentation Tips
+
+1. **Start with demo mode** — Show the interface and explain the concept
+2. **Connect to Arduino** — Show USB connection and live sensor readings
+3. **Demonstrate controls:**
+   - Close roof (watch the animation and physical movement)
+   - Open roof
+   - Adjust to partial opening (use slider)
+   - Show temperature and humidity readings
+4. **Show physical buttons** — Press a button on Arduino, watch web update
+5. **Explain architecture** — Browser → Python → USB → Arduino
+6. **Discuss limitations:**
+   - Shows target position, not measured position
+   - No position feedback sensor
+   - Commands may fail if USB disconnects
+
+## Development
+
+Built for a plant roof class project with:
+- Two servo motors controlling pivoting roof panels
+- DHT11 temperature/humidity sensor
+- Physical button controls
+- USB connection to laptop
+
+Original XOD project preserved in `reference/ombedfin.xodball`.
+
+## License
+
+Class project code. Modify as needed for your hardware setup.
+
+## Credits
+
+Arduino Uno firmware based on original XOD project
+Web interface and Python bridge created for class demonstration

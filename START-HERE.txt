@@ -1,0 +1,236 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                                                                              ║
+║                    ██████╗ █████╗ ███╗   ██╗ ██████╗ ██████╗ ██╗   ██╗     ║
+║                   ██╔════╝██╔══██╗████╗  ██║██╔═══██╗██╔══██╗╚██╗ ██╔╝     ║
+║                   ██║     ███████║██╔██╗ ██║██║   ██║██████╔╝ ╚████╔╝      ║
+║                   ██║     ██╔══██║██║╚██╗██║██║   ██║██╔═══╝   ╚██╔╝       ║
+║                   ╚██████╗██║  ██║██║ ╚████║╚██████╔╝██║        ██║        ║
+║                    ╚═════╝╚═╝  ╚═╝╚═╝  ╚═══╝ ╚═════╝ ╚═╝        ╚═╝        ║
+║                                                                              ║
+║                        Plant Roof Web Control System                         ║
+║                                                                              ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+Welcome! This is Canopy — a web-based control system for your Arduino-powered
+plant roof. Everything runs on your laptop, no mobile app or Wi-Fi needed!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 FASTEST START (30 seconds)
+
+   1. Double-click:  Start-Canopy.cmd
+   2. Type:          DEMO
+   3. Browser opens automatically
+   4. Enter the connection key from terminal
+   5. Try the controls!
+
+   This runs in demo mode — safe to experiment, nothing moves.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📚 DOCUMENTATION GUIDE
+
+   Choose your path based on what you need:
+
+   ┌──────────────────────────────────────────────────────────────────────────┐
+   │                                                                          │
+   │  🔰 New User? Start Here:                                               │
+   │                                                                          │
+   │     OVERVIEW.txt         ← You are here! Big picture overview          │
+   │     QUICKSTART.md        ← Get running in 5 minutes                    │
+   │     README.md            ← Complete user manual                        │
+   │                                                                          │
+   ├──────────────────────────────────────────────────────────────────────────┤
+   │                                                                          │
+   │  🔧 Having Problems?                                                     │
+   │                                                                          │
+   │     TROUBLESHOOTING.md   ← Step-by-step solutions                      │
+   │     README.md            ← See "Troubleshooting" section               │
+   │                                                                          │
+   ├──────────────────────────────────────────────────────────────────────────┤
+   │                                                                          │
+   │  🏗️  Developer/Technical?                                               │
+   │                                                                          │
+   │     ARCHITECTURE.md      ← System design & data flow                   │
+   │     TECHNICAL-NOTES.md   ← Protocol & implementation                   │
+   │     CHANGELOG.md         ← Version history & changes                   │
+   │                                                                          │
+   ├──────────────────────────────────────────────────────────────────────────┤
+   │                                                                          │
+   │  📖 Understanding the Project?                                           │
+   │                                                                          │
+   │     CONVERSION-SUMMARY.md ← How we converted mobile → localhost        │
+   │     CHANGELOG.md          ← What changed between versions              │
+   │                                                                          │
+   └──────────────────────────────────────────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎯 WHAT IS CANOPY?
+
+   Canopy controls an Arduino-powered plant roof directly from your web browser:
+
+      ┌─────────────┐          ┌─────────────┐          ┌──────────────┐
+      │   Browser   │  ◄───►   │   Python    │  ◄───►   │  Arduino Uno │
+      │  (You!)     │  HTTP    │   Server    │   USB    │   + Servos   │
+      └─────────────┘          └─────────────┘          └──────────────┘
+                                                                │
+      All on your laptop                                       ▼
+      No Wi-Fi needed!                                   ┌──────────────┐
+                                                         │  Plant Roof  │
+                                                         │  Opens/Closes│
+                                                         └──────────────┘
+
+   Features:
+   ✓ Open/close roof with buttons or slider
+   ✓ Live temperature & humidity readings
+   ✓ Animated visualization
+   ✓ Physical buttons still work
+   ✓ Demo mode for safe testing
+   ✓ Automatic browser launch
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🛠️  WHAT YOU NEED
+
+   Software:
+   ✓ Python 3.10+ (install from python.org)
+   ✓ Arduino IDE (for uploading firmware)
+   ✓ Modern web browser (Chrome, Edge, Firefox)
+
+   Hardware:
+   ✓ Arduino Uno with USB cable
+   ✓ 2× Servo motors
+   ✓ 1× DHT11 temperature/humidity sensor
+   ✓ 4× Push buttons (optional)
+   ✓ Power supply for servos (5-6V, 2A+)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚡ QUICK COMMANDS
+
+   Try demo mode:
+   ────────────────────────────────────────────────────────────
+   Start-Canopy.cmd
+   → Type: DEMO
+   ────────────────────────────────────────────────────────────
+
+   Connect real Arduino:
+   ────────────────────────────────────────────────────────────
+   Start-Canopy.cmd
+   → Type: COM3  (or your Arduino's port)
+   ────────────────────────────────────────────────────────────
+
+   List available ports:
+   ────────────────────────────────────────────────────────────
+   python bridge/server.py --list-ports
+   ────────────────────────────────────────────────────────────
+
+   Run unit tests:
+   ────────────────────────────────────────────────────────────
+   python -m unittest discover -s tests -v
+   ────────────────────────────────────────────────────────────
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📂 PROJECT STRUCTURE
+
+   Canopy/
+   ├── Start-Canopy.cmd          👈 Double-click to start
+   │
+   ├── 📄 Documentation
+   │   ├── START-HERE.txt        ← You are here!
+   │   ├── OVERVIEW.txt          ← Visual overview
+   │   ├── QUICKSTART.md         ← 5-minute setup
+   │   ├── README.md             ← Full manual
+   │   ├── TROUBLESHOOTING.md    ← Problem solutions
+   │   ├── ARCHITECTURE.md       ← Technical design
+   │   ├── TECHNICAL-NOTES.md    ← Implementation
+   │   ├── CHANGELOG.md          ← Version history
+   │   └── CONVERSION-SUMMARY.md ← Mobile → localhost changes
+   │
+   ├── 🌐 Web Interface
+   │   ├── web/index.html        ← UI
+   │   ├── web/app.js            ← Logic
+   │   └── web/styles.css        ← Styling
+   │
+   ├── 🐍 Python Server
+   │   ├── bridge/server.py      ← HTTP + USB bridge
+   │   └── bridge/requirements.txt
+   │
+   ├── 🤖 Arduino Firmware
+   │   └── firmware/CanopyUno/CanopyUno.ino
+   │
+   └── 🧪 Tests
+       └── tests/test_bridge.py
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❓ COMMON QUESTIONS
+
+   Q: Do I need a mobile phone?
+   A: No! Everything runs in your laptop's web browser.
+
+   Q: Do I need Wi-Fi?
+   A: No! Everything runs on localhost (127.0.0.1).
+
+   Q: Can I control it remotely?
+   A: This version is laptop-only. For remote control, see CHANGELOG.md
+      for information about the original mobile app version.
+
+   Q: What if I don't have an Arduino yet?
+   A: Try demo mode! Just type DEMO when prompted for the COM port.
+
+   Q: Where's the connection key?
+   A: It's shown in the terminal window when you run Start-Canopy.cmd
+
+   Q: Can I change the key?
+   A: Delete bridge/.canopy-key and restart. A new key generates.
+
+   Q: The browser didn't open automatically?
+   A: Just open any browser and go to: http://127.0.0.1:8765
+
+   Q: Temperature shows dashes?
+   A: Check DHT11 wiring to pin D2. Wait 2 seconds for first reading.
+
+   Q: Servos don't move?
+   A: Use external power supply (NOT Arduino 5V). Check wiring.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ NEXT STEPS
+
+   1. Read QUICKSTART.md for detailed setup instructions
+   2. Try demo mode (no hardware needed)
+   3. Upload Arduino firmware (one-time setup)
+   4. Connect your Arduino and control your roof!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎓 FOR CLASS PRESENTATIONS
+
+   1. Start in demo mode (type DEMO)
+   2. Show interface and explain controls
+   3. Connect real Arduino
+   4. Demonstrate open/close/adjust
+   5. Show live temperature/humidity
+   6. Press physical buttons
+   7. Explain architecture diagram
+
+   No Wi-Fi setup = reliable demo!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 TIPS
+
+   • Keep the terminal window open while using the web interface
+   • Demo mode is perfect for practice before a presentation
+   • Connection key changes when you restart the server
+   • Physical buttons work even when laptop is disconnected
+   • Press Ctrl+C in terminal to stop the server
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🌱 Ready to control your plant roof? Double-click Start-Canopy.cmd!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
