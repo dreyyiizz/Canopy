@@ -1,87 +1,460 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#153e32">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'">
-  <title>Canopy · Plant Roof Control</title><link rel="stylesheet" href="styles.css"><script src="app.js" defer></script>
+  <title>Canopy · Plant Roof Control</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
 </head>
 <body>
-<main>
-  <header><div class="brand"><span class="brand-mark" aria-hidden="true">⌂</span><div><strong>canopy<span>.</span></strong><small>Direct laptop control for your plant roof.</small></div></div><button id="setup" class="icon-button" aria-label="Connection settings">⚙</button></header>
-  <div class="eyebrow">YOUR GROWING SPACE</div>
-  <div class="heading"><h1>Plant roof</h1><span id="connectionBadge" class="badge">Demo mode</span></div>
-  <p class="intro">Let a little more outside in.</p>
-  <section class="roof-card" aria-labelledby="roofTitle">
-    <div class="card-top"><span id="roofTitle">ROOF CONTROL</span><span id="modeTag">SIMULATION</span></div>
-    <div class="roof-value"><span id="percent">50</span><span class="percent-sign">%</span><span class="position-caption">requested opening</span></div>
-    <p id="positionLabel">Partly open · demo</p>
-    <svg class="greenhouse" viewBox="0 0 340 180" role="img" aria-label="Two roof panels pivot at the outer edges and meet at the center when closed. Schematic, not measured position.">
-      <defs><linearGradient id="glass" x2="0" y2="1"><stop stop-color="#cee6bb" stop-opacity=".22"/><stop offset="1" stop-color="#cee6bb" stop-opacity=".04"/></linearGradient></defs>
-      <ellipse cx="170" cy="164" rx="134" ry="10" fill="#08291e" opacity=".6"/>
-      <path d="M65 100H275V157H65Z" fill="url(#glass)" stroke="#739b7e" stroke-width="2"/>
-      <path d="M117 100V157M223 100V157" stroke="#739b7e" stroke-width="2"/>
-      <path d="M72 157H268" stroke="#d0dfac" stroke-width="3" stroke-linecap="round"/>
-      <g stroke="#9dbb79" stroke-width="3" fill="#a9cd87"><path d="M101 151V121M101 139C82 140 82 124 82 124C100 121 101 139 101 139M101 131C117 131 119 116 119 116C103 112 101 131 101 131"/><path d="M158 151V114M158 135C139 135 138 119 138 119C155 117 158 135 158 135M158 125C174 126 178 108 178 108C160 108 158 125 158 125"/><path d="M218 151V126M218 140C198 140 200 125 200 125C216 122 218 140 218 140M218 132C237 134 236 116 236 116C219 115 218 132 218 132"/></g>
-      <path d="M170 77V107" stroke="#a9c095" stroke-width="1" stroke-dasharray="3 4"/>
-      <path id="roofLeft" d="M65 100H170" stroke="#d7efac" stroke-width="5" stroke-linecap="round"/>
-      <path id="roofRight" d="M275 100H170" stroke="#d7efac" stroke-width="5" stroke-linecap="round"/>
-      <g fill="#153e32" stroke="#d7efac" stroke-width="2"><circle cx="65" cy="100" r="6"/><circle cx="275" cy="100" r="6"/></g>
-      <g fill="#d7efac"><circle cx="65" cy="100" r="2"/><circle cx="275" cy="100" r="2"/></g>
-      <g fill="#bacbbb" font-size="9" text-anchor="middle"><text x="38" y="94">PIVOT</text><text x="302" y="94">PIVOT</text></g>
-    </svg>
-    <div class="roof-foot"><span id="controlValue">Control level 15 / 30</span><span>Two pivots · linked panels</span></div>
-  </section>
-  <section class="controls" aria-label="Roof controls">
-    <div class="primary-actions"><button id="closeRoof" class="secondary">Close roof</button><button id="openRoof" class="primary">Open roof</button></div>
-    
-    <div class="control-mode-tabs">
-      <button id="parallelModeBtn" class="mode-tab active">Parallel Control</button>
-      <button id="independentModeBtn" class="mode-tab">Independent Control</button>
-    </div>
-    
-    <div id="parallelControls" class="control-panel active">
-      <div class="slider-heading"><label for="level">Adjust opening</label><output id="draftValue" for="level">50%</output></div>
-      <input type="range" id="level" min="0" max="30" step="5" value="15" aria-label="Requested roof opening">
-      <div class="slider-labels"><span>Closed</span><span>Half open</span><span>Open</span></div>
-      <button id="applyLevel" class="apply">Apply position</button>
-    </div>
-    
-    <div id="independentControls" class="control-panel">
-      <div class="independent-slider-group">
-        <div class="slider-heading"><label for="leftLevel">Left servo</label><output id="draftLeftValue" for="leftLevel">50%</output></div>
-        <input type="range" id="leftLevel" min="0" max="30" step="5" value="15" aria-label="Left servo position">
-        <div class="slider-labels"><span>Closed</span><span>Half open</span><span>Open</span></div>
+
+<!-- ── Sidebar ────────────────────────────────────────────────────────────── -->
+<nav class="sidebar" aria-label="Main navigation">
+  <div class="sidebar-logo">
+    <span class="brand-mark" aria-hidden="true">⌂</span>
+    <div><strong>canopy<span>.</span></strong><small>Plant roof control</small></div>
+  </div>
+
+  <ul class="nav-list" role="list">
+    <li><button class="nav-item active" data-page="dashboard" aria-current="page">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="2" y="2" width="7" height="7" rx="1.5"/><rect x="11" y="2" width="7" height="7" rx="1.5"/><rect x="2" y="11" width="7" height="7" rx="1.5"/><rect x="11" y="11" width="7" height="7" rx="1.5"/></svg>
+      Dashboard
+    </button></li>
+    <li><button class="nav-item" data-page="roof">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M2 10 L10 3 L18 10"/><path d="M5 10v7h10v-7"/><path d="M8 17v-4h4v4"/></svg>
+      Plant Roof
+    </button></li>
+    <li><button class="nav-item" data-page="environment">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l3 2"/></svg>
+      Environment
+    </button></li>
+    <li><button class="nav-item" data-page="history">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><polyline points="2,14 6,9 9,12 13,7 18,10"/><line x1="2" y1="17" x2="18" y2="17"/></svg>
+      Activity History
+    </button></li>
+    <li><button class="nav-item" data-page="settings">
+      <svg class="nav-icon" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><circle cx="10" cy="10" r="2.5"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.22 4.22l1.42 1.42M14.36 14.36l1.42 1.42M4.22 15.78l1.42-1.42M14.36 5.64l1.42-1.42"/></svg>
+      Settings
+    </button></li>
+  </ul>
+
+  <div class="sidebar-status">
+    <span class="status-dot" id="sidebarDot"></span>
+    <span id="sidebarStatus">Demo mode</span>
+  </div>
+</nav>
+
+<!-- ── Main workspace ─────────────────────────────────────────────────────── -->
+<div class="workspace">
+
+  <!-- Toast container -->
+  <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- ── PAGE: Dashboard ──────────────────────────────────────────────────── -->
+  <div id="page-dashboard" class="page active">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">YOUR GROWING SPACE</p>
+        <h1>Dashboard</h1>
       </div>
-      <div class="independent-slider-group">
-        <div class="slider-heading"><label for="rightLevel">Right servo</label><output id="draftRightValue" for="rightLevel">50%</output></div>
-        <input type="range" id="rightLevel" min="0" max="30" step="5" value="15" aria-label="Right servo position">
-        <div class="slider-labels"><span>Closed</span><span>Half open</span><span>Open</span></div>
+      <span id="connectionBadge" class="badge">Demo mode</span>
+    </header>
+
+    <div class="dashboard-grid">
+      <!-- Quick status cards -->
+      <div class="dash-cards">
+        <div class="dash-card">
+          <div class="dash-card-icon green">⌂</div>
+          <div>
+            <p class="dash-card-label">Roof position</p>
+            <p class="dash-card-value"><span id="dashPercent">50</span>%</p>
+          </div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-card-icon amber">☀</div>
+          <div>
+            <p class="dash-card-label">Temperature</p>
+            <p class="dash-card-value"><span id="dashTemp">28.0</span> °C</p>
+          </div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-card-icon teal">◉</div>
+          <div>
+            <p class="dash-card-label">Humidity</p>
+            <p class="dash-card-value"><span id="dashHumid">65</span>%</p>
+          </div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-card-icon" id="dashConnIcon">⬤</div>
+          <div>
+            <p class="dash-card-label">Connection</p>
+            <p class="dash-card-value dash-conn" id="dashConn">Demo</p>
+          </div>
+        </div>
       </div>
-      <button id="applyIndependent" class="apply">Apply position</button>
+
+      <!-- Quick open / close -->
+      <div class="dash-quick">
+        <p class="section-label">Quick control</p>
+        <div class="dash-quick-actions">
+          <button class="btn-secondary" id="dashClose">Close roof</button>
+          <button class="btn-primary" id="dashOpen">Open roof</button>
+        </div>
+        <p class="position-note">Shows the controller's target, not a measured roof position.</p>
+      </div>
     </div>
-    
-    <p class="position-note">Shows the controller's target, not a measured roof position.</p>
-  </section>
-  <div class="section-heading"><h2>Inside the growing space</h2><span id="sensorBadge">Sample readings</span></div>
-  <section class="sensors" aria-label="Growing conditions">
-    <article><div class="sensor-icon" aria-hidden="true">☀</div><span>Temperature</span><div><strong id="temperature">28.0</strong><small>°C</small></div></article>
-    <article><div class="sensor-icon water" aria-hidden="true">◉</div><span>Humidity</span><div><strong id="humidity">65</strong><small>%</small></div></article>
-  </section>
-  <div id="notice" class="notice" role="status">Demo mode. These controls do not move your real roof.</div>
-  <section class="connection-card"><div><span class="status-dot" id="statusDot"></span><strong id="connectionTitle">Try it out first</strong><p id="connectionDetail">Connect your Arduino when you're ready.</p></div><button id="connectLink">Connect →</button></section>
-  <footer>ARDUINO UNO <span>·</span> USB TO LAPTOP <span>·</span> WEB CONTROL</footer>
-</main>
-<dialog id="settings">
-  <form id="connectionForm">
-    <div class="dialog-heading"><h2>Connect your Arduino</h2><button id="dismissSettings" type="button" class="icon-button" aria-label="Close settings">×</button></div>
-    <p>Connect your Arduino Uno to this laptop via USB and enter the connection key shown in the terminal.</p>
-    <label for="accessKey">Connection key</label><input id="accessKey" type="password" placeholder="From the terminal where you started Canopy" autocomplete="off">
-    <small id="addressHint">The connection key is displayed when you run Start-Canopy.cmd</small>
-    <div id="settingsError" role="alert"></div>
-    <button id="connectButton" class="primary" type="submit">Connect to Arduino</button>
-    <button id="demoButton" class="secondary" type="button">Use demo mode</button>
-    <p class="privacy-note">The key is kept for this browser session. All communication stays on your local laptop.</p>
-  </form>
-</dialog>
-</body></html>
+  </div>
+
+  <!-- ── PAGE: Plant Roof ─────────────────────────────────────────────────── -->
+  <div id="page-roof" class="page">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">YOUR GROWING SPACE</p>
+        <div class="page-title-row">
+          <h1>Plant roof</h1>
+          <span id="modeTag" class="mode-tag">SIMULATION</span>
+        </div>
+        <p class="page-subtitle">Let a little more outside in.</p>
+      </div>
+    </header>
+
+    <div class="roof-layout">
+      <!-- Left column: main roof card + servo controls -->
+      <div class="roof-main">
+
+        <!-- Roof visualisation card -->
+        <section class="roof-card" aria-labelledby="roofTitle">
+          <div class="card-top">
+            <span id="roofTitle">ROOF CONTROL</span>
+          </div>
+          <div class="roof-value">
+            <span id="percent">50</span><span class="percent-sign">%</span>
+            <span class="position-caption">requested opening</span>
+          </div>
+          <p id="positionLabel">Partly open · demo</p>
+
+          <svg class="greenhouse" viewBox="0 0 480 220" role="img"
+               aria-label="Two roof panels pivot at the outer edges and meet at the center when closed. Schematic, not measured position.">
+            <defs>
+              <linearGradient id="glass" x2="0" y2="1">
+                <stop stop-color="#cee6bb" stop-opacity=".22"/>
+                <stop offset="1" stop-color="#cee6bb" stop-opacity=".04"/>
+              </linearGradient>
+            </defs>
+            <!-- Shadow -->
+            <ellipse cx="240" cy="200" rx="180" ry="12" fill="#08291e" opacity=".5"/>
+            <!-- Greenhouse body -->
+            <path d="M90 128H390V192H90Z" fill="url(#glass)" stroke="#739b7e" stroke-width="1.5"/>
+            <path d="M158 128V192M322 128V192" stroke="#739b7e" stroke-width="1.5"/>
+            <path d="M98 192H382" stroke="#d0dfac" stroke-width="2.5" stroke-linecap="round"/>
+            <!-- Plants -->
+            <g stroke="#9dbb79" stroke-width="2.5" fill="#a9cd87">
+              <path d="M145 186V158M145 172C126 173 126 158 126 158C144 155 145 172 145 172M145 164C161 164 163 149 163 149C147 145 145 164 145 164"/>
+              <path d="M222 186V150M222 169C203 169 202 153 202 153C219 151 222 169 222 169M222 159C238 160 242 142 242 142C224 142 222 159 222 159"/>
+              <path d="M310 186V162M310 175C291 175 293 160 293 160C309 157 310 175 310 175M310 167C329 169 328 151 328 151C311 150 310 167 310 167"/>
+            </g>
+            <!-- Centre line -->
+            <path d="M240 98V136" stroke="#a9c095" stroke-width="1" stroke-dasharray="3 4"/>
+            <!-- LEFT label -->
+            <text x="130" y="118" fill="#bacbbb" font-size="9" text-anchor="middle" font-family="system-ui,sans-serif" letter-spacing="1">LEFT</text>
+            <!-- RIGHT label -->
+            <text x="350" y="118" fill="#bacbbb" font-size="9" text-anchor="middle" font-family="system-ui,sans-serif" letter-spacing="1">RIGHT</text>
+            <!-- Roof panels -->
+            <path id="roofLeft"  d="M90 128H240"  stroke="#d7efac" stroke-width="6" stroke-linecap="round"/>
+            <path id="roofRight" d="M390 128H240" stroke="#d7efac" stroke-width="6" stroke-linecap="round"/>
+            <!-- Pivot circles -->
+            <g fill="#153e32" stroke="#d7efac" stroke-width="2">
+              <circle cx="90"  cy="128" r="7"/>
+              <circle cx="390" cy="128" r="7"/>
+            </g>
+            <g fill="#d7efac">
+              <circle cx="90"  cy="128" r="2.5"/>
+              <circle cx="390" cy="128" r="2.5"/>
+            </g>
+            <!-- Pivot labels -->
+            <g fill="#bacbbb" font-size="8" text-anchor="middle" font-family="system-ui,sans-serif" letter-spacing="1">
+              <text x="58"  y="122">PIVOT</text>
+              <text x="422" y="122">PIVOT</text>
+            </g>
+          </svg>
+
+          <div class="roof-foot">
+            <span id="controlValue">Control level 15 / 30</span>
+            <span>Two pivots · linked panels</span>
+          </div>
+
+          <!-- Open / Close buttons inside the green card -->
+          <div class="roof-actions">
+            <button class="btn-roof-secondary" id="closeRoof">Close roof</button>
+            <button class="btn-roof-primary"   id="openRoof">Open roof</button>
+          </div>
+        </section>
+
+        <!-- Servo control card -->
+        <section class="controls-card" aria-label="Servo controls">
+          <div class="control-mode-tabs">
+            <button id="parallelModeBtn"     class="mode-tab active">Parallel Control</button>
+            <button id="independentModeBtn"  class="mode-tab">Independent Control</button>
+          </div>
+
+          <div id="parallelControls" class="control-panel active">
+            <div class="slider-heading">
+              <label for="level">Adjust opening</label>
+              <output id="draftValue" for="level">50%</output>
+            </div>
+            <input type="range" id="level" min="0" max="30" step="5" value="15" aria-label="Requested roof opening">
+            <div class="slider-labels"><span>Closed</span><span>Half open</span><span>Open</span></div>
+            <button id="applyLevel" class="apply">Apply position</button>
+          </div>
+
+          <div id="independentControls" class="control-panel">
+            <div class="indep-grid">
+              <div class="independent-slider-group">
+                <div class="slider-heading">
+                  <label for="leftLevel">Left servo</label>
+                  <output id="draftLeftValue" for="leftLevel">50%</output>
+                </div>
+                <input type="range" id="leftLevel" min="0" max="30" step="5" value="15" aria-label="Left servo position">
+                <div class="slider-labels"><span>Closed</span><span>Open</span></div>
+              </div>
+              <div class="independent-slider-group">
+                <div class="slider-heading">
+                  <label for="rightLevel">Right servo</label>
+                  <output id="draftRightValue" for="rightLevel">50%</output>
+                </div>
+                <input type="range" id="rightLevel" min="0" max="30" step="5" value="15" aria-label="Right servo position">
+                <div class="slider-labels"><span>Closed</span><span>Open</span></div>
+              </div>
+            </div>
+            <button id="applyIndependent" class="apply">Apply position</button>
+          </div>
+
+          <p class="position-note">Shows the controller's target, not a measured roof position.</p>
+        </section>
+
+      </div><!-- /roof-main -->
+
+      <!-- Right column: environment + system notice -->
+      <aside class="roof-aside">
+
+        <div class="aside-heading">
+          <h2>Inside the growing area</h2>
+          <span id="sensorBadge" class="aside-badge">Sample readings</span>
+        </div>
+
+        <div class="sensor-cards">
+          <article class="sensor-card">
+            <div class="sensor-icon amber" aria-hidden="true">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6">
+                <circle cx="10" cy="10" r="4"/><line x1="10" y1="2" x2="10" y2="4"/>
+                <line x1="10" y1="16" x2="10" y2="18"/><line x1="2" y1="10" x2="4" y2="10"/>
+                <line x1="16" y1="10" x2="18" y2="10"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                <line x1="14.36" y1="14.36" x2="15.78" y2="15.78"/><line x1="4.22" y1="15.78" x2="5.64" y2="14.36"/>
+                <line x1="14.36" y1="5.64" x2="15.78" y2="4.22"/>
+              </svg>
+            </div>
+            <span class="sensor-label">Temperature</span>
+            <div class="sensor-reading"><strong id="temperature">28.0</strong><small>°C</small></div>
+          </article>
+
+          <article class="sensor-card">
+            <div class="sensor-icon teal" aria-hidden="true">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6">
+                <path d="M10 3 C10 3 4 10 4 13.5 a6 6 0 0 0 12 0 C16 10 10 3 10 3z"/>
+              </svg>
+            </div>
+            <span class="sensor-label">Humidity</span>
+            <div class="sensor-reading"><strong id="humidity">65</strong><small>%</small></div>
+          </article>
+        </div>
+
+        <!-- System notice -->
+        <div id="notice" class="notice" role="status">
+          Demo mode. These controls do not move your real roof.
+        </div>
+
+        <!-- Connection footer card -->
+        <div class="aside-connect-card">
+          <div class="aside-connect-body">
+            <span class="status-dot" id="statusDot"></span>
+            <div>
+              <strong id="connectionTitle">Try it out first</strong>
+              <p id="connectionDetail">Connect your Arduino when you're ready.</p>
+            </div>
+          </div>
+          <button id="connectLink" class="btn-link">Connect →</button>
+        </div>
+
+        <p class="footer-note">ARDUINO UNO · USB TO LAPTOP · WEB CONTROL</p>
+      </aside>
+
+    </div><!-- /roof-layout -->
+  </div>
+
+  <!-- ── PAGE: Environment ────────────────────────────────────────────────── -->
+  <div id="page-environment" class="page">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">MONITORING</p>
+        <h1>Environment</h1>
+      </div>
+      <span id="envSensorBadge" class="badge">Sample readings</span>
+    </header>
+    <div class="env-grid">
+      <div class="env-card large">
+        <div class="env-icon amber">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6">
+            <circle cx="10" cy="10" r="4"/><line x1="10" y1="2" x2="10" y2="4"/>
+            <line x1="10" y1="16" x2="10" y2="18"/><line x1="2" y1="10" x2="4" y2="10"/>
+            <line x1="16" y1="10" x2="18" y2="10"/>
+          </svg>
+        </div>
+        <p class="env-label">Temperature</p>
+        <p class="env-value"><span id="envTemp">28.0</span> <span class="env-unit">°C</span></p>
+        <p class="env-note">DHT11 sensor · D2</p>
+      </div>
+      <div class="env-card large">
+        <div class="env-icon teal">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6">
+            <path d="M10 3 C10 3 4 10 4 13.5 a6 6 0 0 0 12 0 C16 10 10 3 10 3z"/>
+          </svg>
+        </div>
+        <p class="env-label">Humidity</p>
+        <p class="env-value"><span id="envHumid">65</span> <span class="env-unit">%</span></p>
+        <p class="env-note">DHT11 sensor · D2</p>
+      </div>
+    </div>
+    <p class="position-note" style="margin-top:24px">Readings update every 2 seconds when Arduino is connected.</p>
+  </div>
+
+  <!-- ── PAGE: Activity History ───────────────────────────────────────────── -->
+  <div id="page-history" class="page">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">LOGS</p>
+        <h1>Activity History</h1>
+      </div>
+      <button id="clearLogsBtn" class="btn-secondary btn-sm">Clear all</button>
+    </header>
+
+    <div class="history-layout">
+
+      <!-- Control log -->
+      <section class="log-panel" aria-labelledby="controlLogTitle">
+        <div class="log-panel-header">
+          <div class="log-panel-title-row">
+            <div class="log-panel-icon green">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" width="16" height="16" aria-hidden="true">
+                <path d="M2 10 L10 3 L18 10"/><path d="M5 10v7h10v-7"/>
+              </svg>
+            </div>
+            <h2 id="controlLogTitle">Control Log</h2>
+          </div>
+          <span class="log-count" id="controlLogCount">0 events</span>
+        </div>
+        <p class="log-description">Servo position changes, open/close commands, and mode switches.</p>
+        <div class="log-list" id="controlLogList" aria-live="polite" aria-label="Control log entries">
+          <div class="log-empty" id="controlLogEmpty">
+            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" width="28" height="28" aria-hidden="true">
+              <path d="M6 10 L16 4 L26 10"/><path d="M9 10v12h14V10"/>
+            </svg>
+            <span>No control events yet. Try opening or closing the roof.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Environment log -->
+      <section class="log-panel" aria-labelledby="envLogTitle">
+        <div class="log-panel-header">
+          <div class="log-panel-title-row">
+            <div class="log-panel-icon teal">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" width="16" height="16" aria-hidden="true">
+                <circle cx="10" cy="10" r="4"/>
+                <line x1="10" y1="2" x2="10" y2="4"/><line x1="10" y1="16" x2="10" y2="18"/>
+                <line x1="2" y1="10" x2="4" y2="10"/><line x1="16" y1="10" x2="18" y2="10"/>
+              </svg>
+            </div>
+            <h2 id="envLogTitle">Environment Log</h2>
+          </div>
+          <span class="log-count" id="envLogCount">0 readings</span>
+        </div>
+        <p class="log-description">Temperature and humidity sampled once per minute from the DHT11 sensor.</p>
+        <div class="log-list" id="envLogList" aria-live="polite" aria-label="Environment log entries">
+          <div class="log-empty" id="envLogEmpty">
+            <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.4" width="28" height="28" aria-hidden="true">
+              <path d="M6 26 C6 26 8 14 16 8 C24 14 26 26 26 26"/>
+              <circle cx="16" cy="24" r="4"/>
+            </svg>
+            <span>Readings appear here once the Arduino is connected and sending data.</span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <!-- ── PAGE: Settings ───────────────────────────────────────────────────── -->
+  <div id="page-settings" class="page">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">CONFIGURATION</p>
+        <h1>Settings</h1>
+      </div>
+    </header>
+
+    <div class="settings-layout">
+      <div class="settings-section">
+        <h2 class="settings-section-title">Hardware Connection</h2>
+
+        <div class="settings-card" id="connectionCard">
+          <div class="settings-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" width="22" height="22" aria-hidden="true">
+              <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M8 7V5a2 2 0 0 1 4 0v2"/>
+              <line x1="12" y1="12" x2="12" y2="16"/><circle cx="12" cy="12" r="1" fill="currentColor"/>
+            </svg>
+          </div>
+          <div class="settings-card-body">
+            <h3>Connect Arduino</h3>
+            <p>Manage your connection to the plant-roof controller. Enter the key shown in the terminal after running Start‑Canopy.cmd.</p>
+
+            <div class="conn-status-row">
+              <span id="settingsStatusDot" class="status-dot"></span>
+              <span id="settingsStatusLabel">Not connected — demo mode active</span>
+            </div>
+
+            <form id="connectionForm" class="conn-form">
+              <label for="accessKey">Connection key</label>
+              <input id="accessKey" type="password" placeholder="Paste the key from your terminal" autocomplete="off">
+              <small id="addressHint">The connection key is displayed when you run Start-Canopy.cmd</small>
+              <div id="settingsError" role="alert"></div>
+              <div class="conn-buttons">
+                <button id="connectButton" class="btn-primary" type="submit">Connect to Arduino</button>
+                <button id="demoButton"    class="btn-secondary" type="button">Use demo mode</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="settings-card info-card">
+          <div class="settings-card-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" width="22" height="22" aria-hidden="true">
+              <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r="0.5" fill="currentColor" stroke-width="2"/>
+            </svg>
+          </div>
+          <div class="settings-card-body">
+            <h3>About</h3>
+            <p>Canopy v2.0 · Localhost web control · No cloud, no network required.</p>
+            <p>Arduino Uno · USB serial · 9600 baud · DHT11 temperature &amp; humidity sensor · Two linked servo motors.</p>
+            <p class="privacy-note">All communication stays on your local laptop. The connection key is stored only in this browser session.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /workspace -->
+</body>
+</html>
